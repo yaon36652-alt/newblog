@@ -1,0 +1,36 @@
+// Prisma schema —— 数据库表结构定义（见 doc/tech.md 第 5 节）
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 管理员账号
+model User {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+// 文章
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String
+  summary   String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 关于我（单行数据）
+model About {
+  id      Int    @id @default(autoincrement())
+  avatar  String @default("")
+  intro   String @default("")
+  contact String @default("")
+}
