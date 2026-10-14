@@ -3,9 +3,24 @@
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
 
-const prisma = new PrismaClient();
+/** 云端（Turso/libSQL）走 HTTP driver adapter；本地 SQLite 文件直连 */
+async function createPrisma() {
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error("缺少 DATABASE_URL 环境变量");
+  if (url.startsWith("libsql://")) {
+    const { PrismaLibSQL } = await import("@prisma/adapter-libsql");
+    return new PrismaClient({
+      adapter: new PrismaLibSQL({
+        url,
+        authToken: process.env.TURSO_AUTH_TOKEN,
+      }),
+    });
+  }
+  return new PrismaClient();
+}
 
 async function main() {
+  const prisma = await createPrisma();
   // 1. 管理员账号：admin / admin123
   const passwordHash = bcrypt.hashSync("admin123", 10);
   await prisma.user.upsert({
@@ -158,11 +173,11 @@ Markdown 是写博客最舒服的格式，掌握下面这些就够日常用了�
     await prisma.about.create({ data: about });
   }
   console.log("✔ 关于我信息已就绪");
+
+  await prisma.$disconnect();
 }
 
-main()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(() => prisma.$disconnect());
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});
