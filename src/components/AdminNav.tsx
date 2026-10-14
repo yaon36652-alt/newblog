@@ -7,6 +7,7 @@ import LogoutButton from "@/components/LogoutButton";
 const NAV_ITEMS = [
   { href: "/admin", label: "仪表盘", exact: true },
   { href: "/admin/posts", label: "文章管理" },
+  { href: "/admin/password", label: "修改密码" },
 ];
 
 export default function AdminNav() {

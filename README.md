@@ -22,6 +22,7 @@
 | 管理员登录 | `/admin/login` |
 | 仪表盘（文章统计） | `/admin` |
 | 文章管理（列表 / 搜索 / 增删改查） | `/admin/posts` |
+| 修改密码 | `/admin/password` |
 
 默认管理员账号：`admin` / `admin123`（首次部署后请修改 `prisma/seed.js` 并重新 seed，或直接改库）。
 
@@ -91,4 +92,4 @@ node prisma/seed.js
 
 **域名**：生产域名 `www.yao-95.xyz`（裸域 308 跳转到 www）。DNS 托管在阿里云：`@ → A 76.76.21.21`、`www → CNAME cname.vercel.com`（`*.vercel.app` 默认域名在国内网络不可达，必须绑自定义域名）。
 
-**改管理员密码**：应用暂无改密功能，需在库层面更新（本地运行 node 脚本，用 bcrypt 生成新哈希后更新 User 表）。
+**改管理员密码**：登录后台 → 顶部导航「修改密码」，验证当前密码后设置新密码（至少 8 位）。默认账号 `admin/admin123` 首次登录后请立即修改。
