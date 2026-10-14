@@ -61,3 +61,34 @@ src/lib/        prisma 客户端、会话（jose）、鉴权、格式化工具
 src/proxy.ts    后台页面"门卫"：未登录访问 /admin 一律跳转登录页
 doc/            产品需求文档与技术方案
 ```
+
+## 部署（Vercel + Turso）
+
+生产环境运行在 **Vercel**（代码托管于 GitHub 自动部署）+ **Turso**（云端 SQLite/libSQL）。
+
+**为什么用 Turso 而不是本地 SQLite**：Vercel 的文件系统只读且每次部署重置，本地 `dev.db` 文件无法持久化，必须使用云端数据库。
+
+**连接机制**：`prisma/schema.prisma` 里的 `file:./dev.db` 仅用于本地开发与 CLI 校验（Prisma CLI 要求 sqlite 的 url 必须以 `file:` 开头）；部署到云端时，代码与 CLI 通过 driver adapter（`@prisma/adapter-libsql`）读取 `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN` 环境变量直连 Turso。
+
+**Vercel 环境变量**（Dashboard → Project → Settings → Environment Variables）：
+
+| 变量 | 说明 |
+| --- | --- |
+| `TURSO_DATABASE_URL` | Turso 数据库地址（`libsql://...turso.io`） |
+| `TURSO_AUTH_TOKEN` | Turso 读写 token |
+| `AUTH_SECRET` | 会话 JWT 签名密钥（随机 64 位十六进制串） |
+
+**建库与初始化**（首次或 schema 变更后，在本地执行）：
+
+```bash
+# 1. 把 Turso 凭据写入 .env.turso（已被 gitignore，模板见该文件）
+# 2. 推表结构（prisma.config.ts 会自动走 driver adapter 直连 Turso）
+set -a && source .env.turso && set +a
+npx prisma db push
+# 3. 写入种子数据（admin 账号 + 示例文章；重复执行会重复建文章）
+node prisma/seed.js
+```
+
+**域名**：生产域名 `www.yao-95.xyz`（裸域 308 跳转到 www）。DNS 托管在阿里云：`@ → A 76.76.21.21`、`www → CNAME cname.vercel.com`（`*.vercel.app` 默认域名在国内网络不可达，必须绑自定义域名）。
+
+**改管理员密码**：应用暂无改密功能，需在库层面更新（本地运行 node 脚本，用 bcrypt 生成新哈希后更新 User 表）。
