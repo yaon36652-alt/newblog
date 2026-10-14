@@ -6,7 +6,9 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  // 本地开发与 CLI 校验使用 file:；云端（Turso）连接由代码里的 driver adapter 接管
+  // 注意：CLI 校验要求 url 必须以 file: 开头，云端地址通过 TURSO_DATABASE_URL 传给 adapter
+  url = "file:./dev.db"
 }
 
 // 管理员账号

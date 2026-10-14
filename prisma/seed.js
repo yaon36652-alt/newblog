@@ -5,8 +5,7 @@ const bcrypt = require("bcryptjs");
 
 /** 云端（Turso/libSQL）走 HTTP driver adapter；本地 SQLite 文件直连 */
 async function createPrisma() {
-  const url = process.env.DATABASE_URL;
-  if (!url) throw new Error("缺少 DATABASE_URL 环境变量");
+  const url = process.env.TURSO_DATABASE_URL ?? "";
   if (url.startsWith("libsql://")) {
     const { PrismaLibSQL } = await import("@prisma/adapter-libsql");
     return new PrismaClient({
